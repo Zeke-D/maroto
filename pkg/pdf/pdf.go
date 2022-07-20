@@ -2,6 +2,10 @@ package pdf
 
 import (
 	"bytes"
+	"io"
+	"errors"
+
+	"github.com/google/uuid"
 
 	"github.com/Zeke-D/maroto/internal/fpdf"
 	"github.com/Zeke-D/maroto/pkg/color"
