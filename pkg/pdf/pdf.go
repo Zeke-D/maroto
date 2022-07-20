@@ -3,12 +3,12 @@ package pdf
 import (
 	"bytes"
 
-	"github.com/johnfercher/maroto/internal/fpdf"
-	"github.com/johnfercher/maroto/pkg/color"
+	"github.com/Zeke-D/maroto/internal/fpdf"
+	"github.com/Zeke-D/maroto/pkg/color"
 
-	"github.com/johnfercher/maroto/internal"
-	"github.com/johnfercher/maroto/pkg/consts"
-	"github.com/johnfercher/maroto/pkg/props"
+	"github.com/Zeke-D/maroto/internal"
+	"github.com/Zeke-D/maroto/pkg/consts"
+	"github.com/Zeke-D/maroto/pkg/props"
 	"github.com/jung-kurt/gofpdf"
 )
 
@@ -38,6 +38,7 @@ type Maroto interface {
 	Text(text string, prop ...props.Text)
 	FileImage(filePathName string, prop ...props.Rect) (err error)
 	Base64Image(base64 string, extension consts.Extension, prop ...props.Rect) (err error)
+	ByteImage(bytesReader io.Reader, extension consts.Extension, x float64, y float64, w float64, h float64) (err error)
 	Barcode(code string, prop ...props.Barcode) error
 	QrCode(code string, prop ...props.Rect)
 	DataMatrixCode(code string, prop ...props.Rect)
@@ -67,6 +68,9 @@ type Maroto interface {
 	SetProtection(actionFlag byte, userPassStr, ownerPassStr string)
 	SetDefaultFontFamily(fontFamily string)
 	GetDefaultFontFamily() string
+	
+	AsPdfMaroto() PdfMaroto
+	SizeBox() props.Box
 }
 
 // PdfMaroto is the principal structure which implements Maroto abstraction.
@@ -174,6 +178,40 @@ func NewMarotoCustomSize(orientation consts.Orientation, pageSize consts.PageSiz
 // Shorthand when using a preset page size from consts.PageSize.
 func NewMaroto(orientation consts.Orientation, pageSize consts.PageSize) Maroto {
 	return NewMarotoCustomSize(orientation, pageSize, "mm", 0, 0)
+}
+
+func (pdf *PdfMaroto) SizeBox() props.Box {
+	return props.Box {
+		X: pdf.xColOffset,
+		Y: pdf.offsetY,
+		W: pdf.colWidth,
+		H: pdf.rowHeight,
+	}
+}
+
+func (pdf *PdfMaroto) ByteImage(bytesReader io.Reader, extension consts.Extension, 
+	x float64, y float64, w float64, h float64) error {
+	imageID, _ := uuid.NewRandom()
+
+	info := pdf.Pdf.RegisterImageOptionsReader(
+		imageID.String(),
+		gofpdf.ImageOptions{
+			ReadDpi:   false,
+			ImageType: string(extension),
+		},
+		bytesReader,
+	)
+
+	if info == nil {
+		return errors.New("could not register image options, maybe path/name is wrong")
+	}
+	
+	pdf.Pdf.Image(imageID.String(), x, y, w, h, false, "", 0, "")
+	return nil
+}
+
+func (s *PdfMaroto) AsPdfMaroto() PdfMaroto {
+	return *s
 }
 
 // AddPage adds a new page in the PDF.

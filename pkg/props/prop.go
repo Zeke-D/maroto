@@ -30,6 +30,14 @@ type Barcode struct {
 	Center bool
 }
 
+// represents a position for a box-shaped element on the pdf (measured in the units of the pdf)
+type Box struct {
+	X float64
+	Y float64
+	W float64
+	H float64
+}
+
 // Rect represents properties from a rectangle (Image, QrCode or Barcode) inside a cell.
 type Rect struct {
 	// Left is the space between the left cell boundary to the rectangle, if center is false.
