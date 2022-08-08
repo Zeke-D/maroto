@@ -8,10 +8,10 @@ import (
 	"github.com/google/uuid"
 
 	"github.com/Zeke-D/maroto/pkg/color"
-	"github.com/Zeke-D/maroto/pkg/old_internals/fpdf"
+	"github.com/Zeke-D/maroto/pkg/old_interns/fpdf"
 
 	"github.com/Zeke-D/maroto/pkg/consts"
-	"github.com/Zeke-D/maroto/pkg/old_internals"
+	"github.com/Zeke-D/maroto/pkg/old_interns"
 	"github.com/Zeke-D/maroto/pkg/props"
 	"github.com/jung-kurt/gofpdf"
 )
@@ -83,14 +83,14 @@ type PdfMaroto struct {
 	Pdf fpdf.Fpdf
 
 	// Components.
-	Math            internal.Math
-	Font            internal.Font
-	TextHelper      internal.Text
-	SignHelper      internal.Signature
-	Image           internal.Image
-	Code            internal.Code
-	TableListHelper internal.TableList
-	LineHelper      internal.Line
+	Math            old_interns.Math
+	Font            old_interns.Font
+	TextHelper      old_interns.Text
+	SignHelper      old_interns.Signature
+	Image           old_interns.Image
+	Code            old_interns.Code
+	TableListHelper old_interns.TableList
+	LineHelper      old_interns.Line
 
 	// Closures with Maroto Header and Footer logic.
 	headerClosure func()
@@ -134,19 +134,19 @@ func NewMarotoCustomSize(orientation consts.Orientation, pageSize consts.PageSiz
 	})
 	fpdf.SetMargins(defaultLeftMargin, defaultTopMargin, defaultRightMargin)
 
-	math := internal.NewMath(fpdf)
-	font := internal.NewFont(fpdf, defaultFontSize, consts.Arial, consts.Bold)
-	text := internal.NewText(fpdf, math, font)
+	math := old_interns.NewMath(fpdf)
+	font := old_interns.NewFont(fpdf, defaultFontSize, consts.Arial, consts.Bold)
+	text := old_interns.NewText(fpdf, math, font)
 
-	signature := internal.NewSignature(fpdf, math, text)
+	signature := old_interns.NewSignature(fpdf, math, text)
 
-	image := internal.NewImage(fpdf, math)
+	image := old_interns.NewImage(fpdf, math)
 
-	code := internal.NewCode(fpdf, math)
+	code := old_interns.NewCode(fpdf, math)
 
-	tableList := internal.NewTableList(text, font)
+	tableList := old_interns.NewTableList(text, font)
 
-	lineHelper := internal.NewLine(fpdf)
+	lineHelper := old_interns.NewLine(fpdf)
 
 	maroto := &PdfMaroto{
 		Pdf:               fpdf,
@@ -296,7 +296,7 @@ func (s *PdfMaroto) Signature(label string, prop ...props.Font) {
 
 	signProp.MakeValid(s.defaultFontFamily)
 
-	cell := internal.Cell{
+	cell := old_interns.Cell{
 		X:      s.xColOffset,
 		Y:      s.offsetY,
 		Width:  s.colWidth,
@@ -374,7 +374,7 @@ func (s *PdfMaroto) Line(spaceHeight float64, prop ...props.Line) {
 			left, top, right, _ := s.Pdf.GetMargins()
 
 			const divisorToGetHalf = 2.0
-			cell := internal.Cell{
+			cell := old_interns.Cell{
 				X:      left,
 				Y:      s.offsetY + top + (spaceHeight / divisorToGetHalf),
 				Width:  width - right,
@@ -484,7 +484,7 @@ func (s *PdfMaroto) Text(text string, prop ...props.Text) {
 		textProp.Top = s.rowHeight
 	}
 
-	cell := internal.Cell{
+	cell := old_interns.Cell{
 		X:      s.xColOffset,
 		Y:      s.offsetY + textProp.Top,
 		Width:  s.colWidth,
@@ -504,7 +504,7 @@ func (s *PdfMaroto) FileImage(filePathName string, prop ...props.Rect) error {
 
 	rectProp.MakeValid()
 
-	cell := internal.Cell{
+	cell := old_interns.Cell{
 		X:      s.xColOffset,
 		Y:      s.offsetY + rectProp.Top,
 		Width:  s.colWidth,
@@ -524,7 +524,7 @@ func (s *PdfMaroto) Base64Image(base64 string, extension consts.Extension, prop 
 
 	rectProp.MakeValid()
 
-	cell := internal.Cell{
+	cell := old_interns.Cell{
 		X:      s.xColOffset,
 		Y:      s.offsetY + rectProp.Top,
 		Width:  s.colWidth,
@@ -543,7 +543,7 @@ func (s *PdfMaroto) Barcode(code string, prop ...props.Barcode) (err error) {
 
 	barcodeProp.MakeValid()
 
-	cell := internal.Cell{
+	cell := old_interns.Cell{
 		X:      s.xColOffset,
 		Y:      s.offsetY + barcodeProp.Top,
 		Width:  s.colWidth,
@@ -563,7 +563,7 @@ func (s *PdfMaroto) DataMatrixCode(code string, prop ...props.Rect) {
 	}
 	rectProp.MakeValid()
 
-	cell := internal.Cell{
+	cell := old_interns.Cell{
 		X:      s.xColOffset,
 		Y:      s.offsetY + rectProp.Top,
 		Width:  s.colWidth,
@@ -582,7 +582,7 @@ func (s *PdfMaroto) QrCode(code string, prop ...props.Rect) {
 
 	rectProp.MakeValid()
 
-	cell := internal.Cell{
+	cell := old_interns.Cell{
 		X:      s.xColOffset,
 		Y:      s.offsetY + rectProp.Top,
 		Width:  s.colWidth,
