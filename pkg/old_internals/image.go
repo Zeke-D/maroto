@@ -1,4 +1,4 @@
-package internal
+package old_interns
 
 import (
 	"bytes"

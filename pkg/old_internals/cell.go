@@ -1,4 +1,4 @@
-package internal
+package old_interns
 
 // Cell represents a cell inside the PDF.
 type Cell struct {

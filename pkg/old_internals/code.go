@@ -1,4 +1,4 @@
-package internal
+package old_interns
 
 import (
 	"github.com/Zeke-D/maroto/pkg/old_internals/fpdf"
