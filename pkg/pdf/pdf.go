@@ -485,7 +485,7 @@ func (s *PdfMaroto) Text(text string, prop ...props.Text) {
 	}
 
 	cell := old_interns.Cell{
-		X:      s.xColOffset,
+		X:      s.xColOffset + textProp.Left,
 		Y:      s.offsetY + textProp.Top,
 		Width:  s.colWidth,
 		Height: 0,
