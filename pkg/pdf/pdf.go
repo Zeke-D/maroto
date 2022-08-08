@@ -2,16 +2,16 @@ package pdf
 
 import (
 	"bytes"
-	"io"
 	"errors"
+	"io"
 
 	"github.com/google/uuid"
 
-	"github.com/Zeke-D/maroto/internal/fpdf"
 	"github.com/Zeke-D/maroto/pkg/color"
+	"github.com/Zeke-D/maroto/pkg/old_internals/fpdf"
 
-	"github.com/Zeke-D/maroto/internal"
 	"github.com/Zeke-D/maroto/pkg/consts"
+	"github.com/Zeke-D/maroto/pkg/old_internals"
 	"github.com/Zeke-D/maroto/pkg/props"
 	"github.com/jung-kurt/gofpdf"
 )
@@ -72,7 +72,7 @@ type Maroto interface {
 	SetProtection(actionFlag byte, userPassStr, ownerPassStr string)
 	SetDefaultFontFamily(fontFamily string)
 	GetDefaultFontFamily() string
-	
+
 	AsPdfMaroto() PdfMaroto
 	SizeBox() props.Box
 }
@@ -185,7 +185,7 @@ func NewMaroto(orientation consts.Orientation, pageSize consts.PageSize) Maroto 
 }
 
 func (pdf *PdfMaroto) SizeBox() props.Box {
-	return props.Box {
+	return props.Box{
 		X: pdf.xColOffset,
 		Y: pdf.offsetY,
 		W: pdf.colWidth,
@@ -193,7 +193,7 @@ func (pdf *PdfMaroto) SizeBox() props.Box {
 	}
 }
 
-func (pdf *PdfMaroto) ByteImage(bytesReader io.Reader, extension consts.Extension, 
+func (pdf *PdfMaroto) ByteImage(bytesReader io.Reader, extension consts.Extension,
 	x float64, y float64, w float64, h float64) error {
 	imageID, _ := uuid.NewRandom()
 
@@ -209,7 +209,7 @@ func (pdf *PdfMaroto) ByteImage(bytesReader io.Reader, extension consts.Extensio
 	if info == nil {
 		return errors.New("could not register image options, maybe path/name is wrong")
 	}
-	
+
 	pdf.Pdf.Image(imageID.String(), x, y, w, h, false, "", 0, "")
 	return nil
 }

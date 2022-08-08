@@ -1,7 +1,7 @@
 package internal
 
 import (
-	"github.com/Zeke-D/maroto/internal/fpdf"
+	"github.com/Zeke-D/maroto/pkg/old_internals/fpdf"
 	"github.com/Zeke-D/maroto/pkg/props"
 )
 
