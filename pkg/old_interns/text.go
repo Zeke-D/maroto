@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/Zeke-D/maroto/pkg/consts"
-	"github.com/Zeke-D/maroto/pkg/old_internals/fpdf"
+	"github.com/Zeke-D/maroto/pkg/old_interns/fpdf"
 	"github.com/Zeke-D/maroto/pkg/props"
 )
 
