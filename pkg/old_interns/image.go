@@ -17,6 +17,7 @@ type Image interface {
 	AddFromFile(path string, cell Cell, prop props.Rect) (err error)
 	AddFromFileAbsolute(path string, cell Cell) error
 	AddFromBase64(stringBase64 string, cell Cell, prop props.Rect, extension consts.Extension) (err error)
+	AddImageToPdf(imageLabel string, info *gofpdf.ImageInfoType, cell Cell, prop props.Rect)
 }
 
 type image struct {
@@ -43,7 +44,7 @@ func (s *image) AddFromFile(path string, cell Cell, prop props.Rect) error {
 		return errors.New("could not register image options, maybe path/name is wrong")
 	}
 
-	s.addImageToPdf(path, info, cell, prop)
+	s.AddImageToPdf(path, info, cell, prop)
 	return nil
 }
 
@@ -81,11 +82,11 @@ func (s *image) AddFromBase64(stringBase64 string, cell Cell, prop props.Rect, e
 		return errors.New("could not register image options, maybe path/name is wrong")
 	}
 
-	s.addImageToPdf(imageID.String(), info, cell, prop)
+	s.AddImageToPdf(imageID.String(), info, cell, prop)
 	return nil
 }
 
-func (s *image) addImageToPdf(imageLabel string, info *gofpdf.ImageInfoType, cell Cell, prop props.Rect) {
+func (s *image) AddImageToPdf(imageLabel string, info *gofpdf.ImageInfoType, cell Cell, prop props.Rect) {
 	var x, y, w, h float64
 	if prop.Center {
 		x, y, w, h = s.math.GetRectCenterColProperties(info.Width(), info.Height(), cell.Width, cell.Height, cell.X, prop.Percent)

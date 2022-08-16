@@ -42,7 +42,7 @@ type Maroto interface {
 	Text(text string, prop ...props.Text)
 	FileImage(filePathName string, prop ...props.Rect) (err error)
 	Base64Image(base64 string, extension consts.Extension, prop ...props.Rect) (err error)
-	ByteImage(bytesReader io.Reader, extension consts.Extension, x float64, y float64, w float64, h float64) (err error)
+	ByteImage(bytesReader io.Reader, extension consts.Extension, prop ...props.Rect) (err error)
 	Barcode(code string, prop ...props.Barcode) error
 	QrCode(code string, prop ...props.Rect)
 	DataMatrixCode(code string, prop ...props.Rect)
@@ -198,8 +198,21 @@ func (pdf *PdfMaroto) SizeBox() props.Box {
 	}
 }
 
-func (pdf *PdfMaroto) ByteImage(bytesReader io.Reader, extension consts.Extension,
-	x float64, y float64, w float64, h float64) error {
+func (pdf *PdfMaroto) ByteImage(bytesReader io.Reader, extension consts.Extension, prop ...props.Rect) error {
+	rectProp := props.Rect{}
+	if len(prop) > 0 {
+		rectProp = prop[0]
+	}
+
+	rectProp.MakeValid()
+
+	cell := old_interns.Cell{
+		X:      pdf.XColOffset,
+		Y:      pdf.OffsetY + rectProp.Top,
+		Width:  pdf.ColWidth,
+		Height: pdf.RowHeight,
+	}
+
 	imageID, _ := uuid.NewRandom()
 
 	info := pdf.Pdf.RegisterImageOptionsReader(
@@ -215,7 +228,7 @@ func (pdf *PdfMaroto) ByteImage(bytesReader io.Reader, extension consts.Extensio
 		return errors.New("could not register image options, maybe path/name is wrong")
 	}
 
-	pdf.Pdf.Image(imageID.String(), x, y, w, h, false, "", 0, "")
+	pdf.Image.AddImageToPdf(imageID.String(), info, cell, rectProp)
 	return nil
 }
 
