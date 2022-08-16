@@ -68,6 +68,7 @@ type Maroto interface {
 
 	// Fonts
 	AddUTF8Font(familyStr string, styleStr consts.Style, fileStr string)
+	AddUTF8FontFromBytes(familyStr string, styleStr consts.Style, utf8Bytes []byte)
 	SetFontLocation(fontDirStr string)
 	SetProtection(actionFlag byte, userPassStr, ownerPassStr string)
 	SetDefaultFontFamily(fontFamily string)
@@ -629,6 +630,10 @@ func (s *PdfMaroto) AddFont(familyStr string, styleStr consts.Style, fileStr str
 // styleStr is the style of the font and fileStr is the path to the .ttf file.
 func (s *PdfMaroto) AddUTF8Font(familyStr string, styleStr consts.Style, fileStr string) {
 	s.Pdf.AddUTF8Font(familyStr, string(styleStr), fileStr)
+}
+
+func (s *PdfMaroto) AddUTF8FontFromBytes(familyStr string, styleStr consts.Style, utf8Bytes []byte) {
+	s.Pdf.AddUTF8FontFromBytes(familyStr, string(styleStr), utf8Bytes)
 }
 
 func (s *PdfMaroto) Rect(x float64, y float64, w float64, h float64, fillColor color.Color, borderColor color.Color, borderWidth float64) {

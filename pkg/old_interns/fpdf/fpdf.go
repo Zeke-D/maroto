@@ -11,6 +11,7 @@ import (
 type Fpdf interface {
 	AddFont(familyStr, styleStr, fileStr string)
 	AddFontFromBytes(familyStr, styleStr string, jsonFileBytes, zFileBytes []byte)
+	AddUTF8FontFromBytes(familyStr, styleStr string, utf8Bytes []byte)
 	AddFontFromReader(familyStr, styleStr string, r io.Reader)
 	AddLayer(name string, visible bool) (layerID int)
 	AddLink() int
@@ -207,6 +208,10 @@ func (s fpdf) AddUTF8Font(familyStr, styleStr, fileStr string) {
 
 func (s fpdf) AddFontFromBytes(familyStr, styleStr string, jsonFileBytes, zFileBytes []byte) {
 	s.Gofpdf.AddFontFromBytes(familyStr, styleStr, jsonFileBytes, zFileBytes)
+}
+
+func (s fpdf) AddUTF8FontFromBytes(familyStr, styleStr string, utf8Bytes []byte) {
+	s.Gofpdf.AddUTF8FontFromBytes(familyStr, styleStr, utf8Bytes)
 }
 
 func (s fpdf) AddFontFromReader(familyStr, styleStr string, r io.Reader) {
