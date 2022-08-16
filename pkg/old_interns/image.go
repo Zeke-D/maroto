@@ -15,6 +15,7 @@ import (
 // Image is the abstraction which deals of how to add images in a PDF.
 type Image interface {
 	AddFromFile(path string, cell Cell, prop props.Rect) (err error)
+	AddFromFileAbsolute(path string, cell Cell) error
 	AddFromBase64(stringBase64 string, cell Cell, prop props.Rect, extension consts.Extension) (err error)
 }
 
@@ -43,6 +44,21 @@ func (s *image) AddFromFile(path string, cell Cell, prop props.Rect) error {
 	}
 
 	s.addImageToPdf(path, info, cell, prop)
+	return nil
+}
+
+// adds an image from a file at the given values of cell
+func (s *image) AddFromFileAbsolute(path string, cell Cell) error {
+	info := s.pdf.RegisterImageOptions(path, gofpdf.ImageOptions{
+		ReadDpi:   false,
+		ImageType: "",
+	})
+
+	if info == nil {
+		return errors.New("could not register image options, maybe path/name is wrong")
+	}
+
+	s.pdf.Image(path, cell.X, cell.Y, cell.Width, cell.Height, false, "", 0, "")
 	return nil
 }
 

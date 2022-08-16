@@ -98,16 +98,16 @@ type PdfMaroto struct {
 
 	// Computed values.
 	pageIndex                 int
-	offsetY                   float64
-	rowHeight                 float64
+	OffsetY                   float64
+	RowHeight                 float64
 	firstPageNb               int
-	xColOffset                float64
-	colWidth                  float64
+	XColOffset                float64
+	ColWidth                  float64
 	footerHeight              float64
 	headerFooterContextActive bool
 
 	// Page configs.
-	marginTop         float64
+	MarginTop         float64
 	calculationMode   bool
 	backgroundColor   color.Color
 	debugMode         bool
@@ -121,7 +121,7 @@ type PdfMaroto struct {
 // Use if custom page size is needed. Otherwise use NewMaroto() shorthand if using page sizes from consts.Pagesize.
 // If using custom width and height, pageSize is just a string value for the format and takes no effect.
 // Width and height inputs are measurements of the page in Portrait orientation.
-func NewMarotoCustomSize(orientation consts.Orientation, pageSize consts.PageSize, unitStr string, width, height float64) Maroto {
+func NewMarotoCustomSize(orientation consts.Orientation, pageSize consts.PageSize, unitStr string, width, height float64, fontDirStr string) Maroto {
 	fpdf := gofpdf.NewCustom(&gofpdf.InitType{
 		OrientationStr: string(orientation),
 		UnitStr:        unitStr,
@@ -130,7 +130,7 @@ func NewMarotoCustomSize(orientation consts.Orientation, pageSize consts.PageSiz
 			Wd: width,
 			Ht: height,
 		},
-		FontDirStr: "",
+		FontDirStr: fontDirStr,
 	})
 	fpdf.SetMargins(defaultLeftMargin, defaultTopMargin, defaultRightMargin)
 
@@ -181,15 +181,19 @@ func NewMarotoCustomSize(orientation consts.Orientation, pageSize consts.PageSiz
 // Receive an Orientation and a PageSize.
 // Shorthand when using a preset page size from consts.PageSize.
 func NewMaroto(orientation consts.Orientation, pageSize consts.PageSize) Maroto {
-	return NewMarotoCustomSize(orientation, pageSize, "mm", 0, 0)
+	return NewMarotoCustomSize(orientation, pageSize, "mm", 0, 0, "")
+}
+
+func NewMarotoWithFontDir(orientation consts.Orientation, pageSize consts.PageSize, fontDirStr string) Maroto {
+	return NewMarotoCustomSize(orientation, pageSize, "mm", 0, 0, fontDirStr)
 }
 
 func (pdf *PdfMaroto) SizeBox() props.Box {
 	return props.Box{
-		X: pdf.xColOffset,
-		Y: pdf.offsetY,
-		W: pdf.colWidth,
-		H: pdf.rowHeight,
+		X: pdf.XColOffset,
+		Y: pdf.OffsetY,
+		W: pdf.ColWidth,
+		H: pdf.RowHeight,
 	}
 }
 
@@ -223,7 +227,7 @@ func (s *PdfMaroto) AddPage() {
 	_, pageHeight := s.Pdf.GetPageSize()
 	_, top, _, bottom := s.Pdf.GetMargins()
 
-	totalOffsetY := int(s.offsetY + s.footerHeight)
+	totalOffsetY := int(s.OffsetY + s.footerHeight)
 	maxOffsetPage := int(pageHeight - bottom - top)
 
 	s.Row(float64(maxOffsetPage-totalOffsetY), func() {
@@ -258,14 +262,14 @@ func (s *PdfMaroto) GetCurrentPage() int {
 
 // GetCurrentOffset obtain the current offset in y axis.
 func (s *PdfMaroto) GetCurrentOffset() float64 {
-	return s.offsetY
+	return s.OffsetY
 }
 
 // SetPageMargins overrides default margins (10,10,10)
 // the new page margin will affect all PDF pages.
 func (s *PdfMaroto) SetPageMargins(left, top, right float64) {
 	if top > defaultTopMargin {
-		s.marginTop = top - defaultTopMargin
+		s.MarginTop = top - defaultTopMargin
 	}
 
 	s.Pdf.SetMargins(left, defaultTopMargin, right)
@@ -275,7 +279,7 @@ func (s *PdfMaroto) SetPageMargins(left, top, right float64) {
 // Default page margins is left: 10, top: 10, right: 10.
 func (s *PdfMaroto) GetPageMargins() (left float64, top float64, right float64, bottom float64) {
 	left, top, right, bottom = s.Pdf.GetMargins()
-	top += s.marginTop
+	top += s.MarginTop
 
 	return
 }
@@ -297,10 +301,10 @@ func (s *PdfMaroto) Signature(label string, prop ...props.Font) {
 	signProp.MakeValid(s.defaultFontFamily)
 
 	cell := old_interns.Cell{
-		X:      s.xColOffset,
-		Y:      s.offsetY,
-		Width:  s.colWidth,
-		Height: s.rowHeight,
+		X:      s.XColOffset,
+		Y:      s.OffsetY,
+		Width:  s.ColWidth,
+		Height: s.RowHeight,
 	}
 
 	s.SignHelper.AddSpaceFor(label, cell, signProp.ToTextProp(consts.Center, 0.0, false, 0))
@@ -376,9 +380,9 @@ func (s *PdfMaroto) Line(spaceHeight float64, prop ...props.Line) {
 			const divisorToGetHalf = 2.0
 			cell := old_interns.Cell{
 				X:      left,
-				Y:      s.offsetY + top + (spaceHeight / divisorToGetHalf),
+				Y:      s.OffsetY + top + (spaceHeight / divisorToGetHalf),
 				Width:  width - right,
-				Height: s.offsetY + top + (spaceHeight / divisorToGetHalf),
+				Height: s.OffsetY + top + (spaceHeight / divisorToGetHalf),
 			}
 
 			s.LineHelper.Draw(cell, lineProp)
@@ -398,7 +402,7 @@ func (s *PdfMaroto) Row(height float64, closure func()) {
 	_, pageHeight := s.Pdf.GetPageSize()
 	_, top, _, bottom := s.Pdf.GetMargins()
 
-	totalOffsetY := int(s.offsetY + height + s.footerHeight)
+	totalOffsetY := int(s.OffsetY + height + s.footerHeight)
 	maxOffsetPage := int(pageHeight - bottom - top)
 
 	// Note: The headerFooterContextActive is needed to avoid recursive
@@ -412,28 +416,28 @@ func (s *PdfMaroto) Row(height float64, closure func()) {
 			s.headerFooterContextActive = true
 			s.footer()
 			s.headerFooterContextActive = false
-			s.offsetY = 0
+			s.OffsetY = 0
 			s.pageIndex++
 		}
 	}
 
 	// If is a new page, add the header.
 	if !s.headerFooterContextActive {
-		if s.offsetY == 0 {
+		if s.OffsetY == 0 {
 			s.headerFooterContextActive = true
 			s.header()
 			s.headerFooterContextActive = false
 		}
 	}
 
-	s.rowHeight = height
-	s.xColOffset = 0
+	s.RowHeight = height
+	s.XColOffset = 0
 
 	// This closure has the Cols to be executed.
 	closure()
 
-	s.offsetY += s.rowHeight
-	s.Pdf.Ln(s.rowHeight)
+	s.OffsetY += s.RowHeight
+	s.Pdf.Ln(s.RowHeight)
 }
 
 // Col create a column inside a row and enable to add
@@ -450,13 +454,13 @@ func (s *PdfMaroto) Col(width uint, closure func()) {
 	left, _, right, _ := s.Pdf.GetMargins()
 	widthPerCol := (pageWidth - right - left) * percent
 
-	s.colWidth = widthPerCol
+	s.ColWidth = widthPerCol
 	s.createColSpace(widthPerCol)
 
 	// This closure has the components to be executed.
 	closure()
 
-	s.xColOffset += s.colWidth
+	s.XColOffset += s.ColWidth
 }
 
 // ColSpace create an empty column inside a row.
@@ -478,20 +482,29 @@ func (s *PdfMaroto) Text(text string, prop ...props.Text) {
 		textProp = prop[0]
 	}
 
-	textProp.MakeValid(s.defaultFontFamily)
-
-	if textProp.Top > s.rowHeight {
-		textProp.Top = s.rowHeight
+	if textProp.Top > s.RowHeight {
+		textProp.Top = s.RowHeight
 	}
 
 	cell := old_interns.Cell{
-		X:      s.xColOffset + textProp.Left,
-		Y:      s.offsetY + textProp.Top,
-		Width:  s.colWidth,
+		X:      s.XColOffset + textProp.Left,
+		Y:      s.OffsetY + textProp.Top,
+		Width:  s.ColWidth,
 		Height: 0,
 	}
 
+	s.TextCustomCell(text, cell, textProp)
+
+}
+
+func (s *PdfMaroto) TextCustomCell(text string, cell old_interns.Cell, textProp props.Text) {
+	textProp.MakeValid(s.defaultFontFamily)
 	s.TextHelper.Add(text, cell, textProp)
+}
+
+func (s *PdfMaroto) TextAbsolute(text string, textProp props.Text) {
+	textProp.MakeValid(s.defaultFontFamily)
+	s.TextHelper.AddAbsolute(text, textProp)
 }
 
 // FileImage add an Image reading from disk inside a cell.
@@ -505,10 +518,10 @@ func (s *PdfMaroto) FileImage(filePathName string, prop ...props.Rect) error {
 	rectProp.MakeValid()
 
 	cell := old_interns.Cell{
-		X:      s.xColOffset,
-		Y:      s.offsetY + rectProp.Top,
-		Width:  s.colWidth,
-		Height: s.rowHeight,
+		X:      s.XColOffset,
+		Y:      s.OffsetY + rectProp.Top,
+		Width:  s.ColWidth,
+		Height: s.RowHeight,
 	}
 
 	return s.Image.AddFromFile(filePathName, cell, rectProp)
@@ -525,10 +538,10 @@ func (s *PdfMaroto) Base64Image(base64 string, extension consts.Extension, prop 
 	rectProp.MakeValid()
 
 	cell := old_interns.Cell{
-		X:      s.xColOffset,
-		Y:      s.offsetY + rectProp.Top,
-		Width:  s.colWidth,
-		Height: s.rowHeight,
+		X:      s.XColOffset,
+		Y:      s.OffsetY + rectProp.Top,
+		Width:  s.ColWidth,
+		Height: s.RowHeight,
 	}
 
 	return s.Image.AddFromBase64(base64, cell, rectProp, extension)
@@ -544,10 +557,10 @@ func (s *PdfMaroto) Barcode(code string, prop ...props.Barcode) (err error) {
 	barcodeProp.MakeValid()
 
 	cell := old_interns.Cell{
-		X:      s.xColOffset,
-		Y:      s.offsetY + barcodeProp.Top,
-		Width:  s.colWidth,
-		Height: s.rowHeight,
+		X:      s.XColOffset,
+		Y:      s.OffsetY + barcodeProp.Top,
+		Width:  s.ColWidth,
+		Height: s.RowHeight,
 	}
 
 	err = s.Code.AddBar(code, cell, barcodeProp)
@@ -564,10 +577,10 @@ func (s *PdfMaroto) DataMatrixCode(code string, prop ...props.Rect) {
 	rectProp.MakeValid()
 
 	cell := old_interns.Cell{
-		X:      s.xColOffset,
-		Y:      s.offsetY + rectProp.Top,
-		Width:  s.colWidth,
-		Height: s.rowHeight,
+		X:      s.XColOffset,
+		Y:      s.OffsetY + rectProp.Top,
+		Width:  s.ColWidth,
+		Height: s.RowHeight,
 	}
 
 	s.Code.AddDataMatrix(code, cell, rectProp)
@@ -583,10 +596,10 @@ func (s *PdfMaroto) QrCode(code string, prop ...props.Rect) {
 	rectProp.MakeValid()
 
 	cell := old_interns.Cell{
-		X:      s.xColOffset,
-		Y:      s.offsetY + rectProp.Top,
-		Width:  s.colWidth,
-		Height: s.rowHeight,
+		X:      s.XColOffset,
+		Y:      s.OffsetY + rectProp.Top,
+		Width:  s.ColWidth,
+		Height: s.RowHeight,
 	}
 
 	s.Code.AddQr(code, cell, rectProp)
@@ -608,10 +621,21 @@ func (s *PdfMaroto) Output() (bytes.Buffer, error) {
 	return buffer, err
 }
 
+func (s *PdfMaroto) AddFont(familyStr string, styleStr consts.Style, fileStr string) {
+	s.Pdf.AddFont(familyStr, string(styleStr), fileStr)
+}
+
 // AddUTF8Font add a custom utf8 font. familyStr is the name of the custom font registered in maroto.
 // styleStr is the style of the font and fileStr is the path to the .ttf file.
 func (s *PdfMaroto) AddUTF8Font(familyStr string, styleStr consts.Style, fileStr string) {
 	s.Pdf.AddUTF8Font(familyStr, string(styleStr), fileStr)
+}
+
+func (s *PdfMaroto) Rect(x float64, y float64, w float64, h float64, fillColor color.Color, borderColor color.Color, borderWidth float64) {
+	s.Pdf.SetFillColor(fillColor.Red, fillColor.Green, fillColor.Blue)
+	s.Pdf.SetDrawColor(borderColor.Red, borderColor.Green, borderColor.Blue)
+	s.Pdf.SetLineWidth(borderWidth)
+	s.Pdf.Rect(x, y, w, h, "FD")
 }
 
 // SetFontLocation allows you to change the fonts lookup location.  fontDirStr is an absolute path where the fonts should be located.
@@ -641,7 +665,7 @@ func (s *PdfMaroto) createColSpace(actualWidthPerCol float64) {
 		border = "1"
 	}
 
-	s.Pdf.CellFormat(actualWidthPerCol, s.rowHeight, "", border, 0, "C", !s.backgroundColor.IsWhite(), 0, "")
+	s.Pdf.CellFormat(actualWidthPerCol, s.RowHeight, "", border, 0, "C", !s.backgroundColor.IsWhite(), 0, "")
 }
 
 func (s *PdfMaroto) drawLastFooter() {
@@ -649,8 +673,8 @@ func (s *PdfMaroto) drawLastFooter() {
 		_, pageHeight := s.Pdf.GetPageSize()
 		_, top, _, bottom := s.Pdf.GetMargins()
 
-		if s.offsetY+s.footerHeight < pageHeight-bottom-top {
-			totalOffsetY := int(s.offsetY + s.footerHeight)
+		if s.OffsetY+s.footerHeight < pageHeight-bottom-top {
+			totalOffsetY := int(s.OffsetY + s.footerHeight)
 			maxOffsetPage := int(pageHeight - bottom - top)
 
 			s.Row(float64(maxOffsetPage-totalOffsetY), func() {
@@ -671,7 +695,7 @@ func (s *PdfMaroto) footer() {
 	_, pageHeight := s.Pdf.GetPageSize()
 	_, top, _, bottom := s.Pdf.GetMargins()
 
-	totalOffsetY := int(s.offsetY + s.footerHeight)
+	totalOffsetY := int(s.OffsetY + s.footerHeight)
 	maxOffsetPage := int(pageHeight - bottom - top)
 
 	s.Row(float64(maxOffsetPage-totalOffsetY), func() {
@@ -689,7 +713,7 @@ func (s *PdfMaroto) header() {
 	backgroundColor := s.backgroundColor
 	s.SetBackgroundColor(color.NewWhite())
 
-	s.Row(s.marginTop, func() {
+	s.Row(s.MarginTop, func() {
 		s.ColSpace(uint(consts.MaxGridSum))
 	})
 

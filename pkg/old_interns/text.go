@@ -11,6 +11,7 @@ import (
 // Text is the abstraction which deals of how to add text inside PDF.
 type Text interface {
 	Add(text string, cell Cell, textProp props.Text)
+	AddAbsolute(text string, textProp props.Text)
 	GetLinesQuantity(text string, fontFamily props.Text, colWidth float64) int
 }
 
@@ -64,6 +65,14 @@ func (s *text) Add(text string, cell Cell, textProp props.Text) {
 		}
 	}
 
+	s.font.SetColor(originalColor)
+}
+
+func (s *text) AddAbsolute(text string, textProp props.Text) {
+	s.font.SetFont(textProp.Family, textProp.Style, textProp.Size)
+	originalColor := s.font.GetColor()
+	s.font.SetColor(textProp.Color)
+	s.pdf.Text(textProp.Left, textProp.Top, text)
 	s.font.SetColor(originalColor)
 }
 
