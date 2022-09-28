@@ -102,14 +102,14 @@ type PdfMaroto struct {
 	pageIndex                 int
 	OffsetY                   float64
 	RowHeight                 float64
-	firstPageNb               int
 	XColOffset                float64
 	ColWidth                  float64
+	MarginTop                 float64
+	firstPageNb               int
 	footerHeight              float64
 	headerFooterContextActive bool
 
 	// Page configs.
-	MarginTop         float64
 	calculationMode   bool
 	backgroundColor   color.Color
 	debugMode         bool
@@ -246,7 +246,7 @@ func (pdf *PdfMaroto) ByteImageAbsolute(bytesReader io.Reader, extension consts.
 	)
 
 	if info == nil {
-		return errors.New("could not register image options, maybe path/name is wrong")
+		return errors.New("ByteImageAbsolute: could not register image options, maybe path/name is wrong")
 	}
 
 	pdf.Pdf.Image(imageID.String(), x, y, w, h, false, "", 0, "")
@@ -426,6 +426,7 @@ func (s *PdfMaroto) Line(spaceHeight float64, prop ...props.Line) {
 
 // Row define a row and enable add columns inside the row.
 // Maroto do not support recursive rows or rows inside columns.
+
 func (s *PdfMaroto) Row(height float64, closure func()) {
 	// Used to calculate the height of the footer.
 	if s.calculationMode {
