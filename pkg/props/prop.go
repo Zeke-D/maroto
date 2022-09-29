@@ -202,6 +202,35 @@ func (s *Barcode) MakeValid() {
 	}
 }
 
+// setters for method chaining
+func (t Text) WithTop(top float64) Text {
+	t.Top = top
+	return t
+}
+
+func (t Text) WithLeft(left float64) Text {
+	t.Left = left
+	return t
+}
+
+func (t Text) WithColor(col color.Color) Text {
+	t.Color = col
+	return t
+}
+
+func (t Text) WithAlign(align consts.Align) Text {
+	t.Align = align
+	return t
+}
+func (t Text) WithStyle(style consts.Style) Text {
+	t.Style = style
+	return t
+}
+func (t Text) WithSize(size float64) Text {
+	t.Size = size
+	return t
+}
+
 // MakeValid from Text define default values for a Text.
 func (s *Text) MakeValid(defaultFamily string) {
 	minValue := 0.0
